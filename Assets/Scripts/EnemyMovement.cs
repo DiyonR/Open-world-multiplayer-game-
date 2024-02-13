@@ -7,16 +7,14 @@ public class EnemyMovement : MonoBehaviour
 {
     public Transform target; // Reference to the player's transform
     public float detectionRange = 10f; // Range at which the enemy detects the player
-    public float patrolRange = 20f; // Range within which the enemy selects patrol points
-    public float recheckInterval = 2f; // Interval at which the enemy rechecks if the destination is reachable
-    public Transform[] patrolPoints; // List of potential patrol points
+    public float roamRange = 30f; // Range within which the enemy roams
     private NavMeshAgent agent; // Reference to the NavMeshAgent component
-    private float lastCheckTime; // Time of the last destination check
+    private Vector3 roamingDestination; // Current roaming destination
 
     void Start()
     {
         agent = GetComponent<NavMeshAgent>(); // Initialize the NavMeshAgent component
-        lastCheckTime = Time.time; // Record the initial time
+        SetRandomRoamingDestination();
     }
 
     void Update()
@@ -31,28 +29,26 @@ public class EnemyMovement : MonoBehaviour
             {
                 // Set destination for the NavMeshAgent to the player's position
                 agent.SetDestination(target.position);
-                lastCheckTime = Time.time; // Update the last check time
             }
-            else if (Time.time - lastCheckTime >= recheckInterval)
+            else
             {
-                // If the player is out of range for too long, select a new patrol point
-                SelectPatrolPoint();
-                lastCheckTime = Time.time; // Update the last check time
+                // If the player is not within detection range, roam around
+                if (!agent.pathPending && agent.remainingDistance < 0.5f)
+                {
+                    SetRandomRoamingDestination();
+                }
             }
         }
     }
 
-    void SelectPatrolPoint()
+    void SetRandomRoamingDestination()
     {
-        if (patrolPoints.Length > 0)
-        {
-            // Select a random patrol point within the specified patrol range
-            Vector3 randomPoint = transform.position + Random.insideUnitSphere * patrolRange;
-            NavMeshHit hit;
-            NavMesh.SamplePosition(randomPoint, out hit, patrolRange, NavMesh.AllAreas);
+        // Select a random destination within the defined roam range
+        Vector3 randomPoint = transform.position + Random.insideUnitSphere * roamRange;
+        NavMeshHit hit;
+        NavMesh.SamplePosition(randomPoint, out hit, roamRange, NavMesh.AllAreas);
 
-            // Set the selected patrol point as the destination for the NavMeshAgent
-            agent.SetDestination(hit.position);
-        }
+        // Set the selected destination as the target for the NavMeshAgent
+        agent.SetDestination(hit.position);
     }
 }
