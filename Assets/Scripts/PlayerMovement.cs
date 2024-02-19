@@ -11,6 +11,7 @@ public class PlayerMovement : MonoBehaviour
     public float dodgeDuration = 0.5f;
 
     private CharacterController controller;
+    Animator animator;
     private Vector3 velocity;
     private bool isDodging = false;
     private Vector3 dodgeDirection;
@@ -18,6 +19,7 @@ public class PlayerMovement : MonoBehaviour
     void Start()
     {
         controller = GetComponent<CharacterController>();
+        animator = GetComponent<Animator>();
     }
 
     void Update()
@@ -45,6 +47,7 @@ public class PlayerMovement : MonoBehaviour
         // Dodge
         if (!isDodging && Input.GetKeyDown(KeyCode.LeftShift))
             Dodge();
+
     }
 
     void Dodge()
